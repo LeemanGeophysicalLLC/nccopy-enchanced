@@ -1,0 +1,49 @@
+plugins {
+  id 'com.github.johnrengelman.shadow' version '6.1.0'
+  id 'java'
+}
+
+group 'edu.ucar'
+version '0.0.1-SNAPSHOT'
+
+repositories {
+  mavenCentral()
+  maven {
+    url 'https://artifacts.unidata.ucar.edu/repository/unidata-releases/'
+  }
+  maven {
+    url 'https://artifacts.unidata.ucar.edu/repository/unidata-snapshots/'
+  }
+}
+
+dependencies {
+  compile enforcedPlatform ('edu.ucar:netcdf-java-bom:5.4.2-SNAPSHOT')
+
+  compile 'edu.ucar:cdm-core'
+  compile 'edu.ucar:tds:5.0.0-SNAPSHOT:classes@jar'
+  runtimeOnly 'edu.ucar:httpservices'
+  runtimeOnly 'edu.ucar:grib'
+  runtimeOnly 'edu.ucar:netcdf4'
+}
+
+jar {
+  enabled = false
+}
+
+shadowJar {
+  archiveBaseName.set('nccopyEnhanced')
+  archiveClassifier.set('')
+  doFirst {
+    manifest.attributes jar.manifest.attributes
+  }
+  manifest.attributes 'Main-Class': 'edu.ucar.experimental.NccopyEnhanced'
+  mergeServiceFiles()
+}
+
+assemble.dependsOn(shadowJar)
+
+tasks.named('wrapper') {
+  distributionType = Wrapper.DistributionType.ALL
+  // when upgrading, make sure we are using a compatible version of spock-core for testing.
+  gradleVersion = '6.7.1'
+}
